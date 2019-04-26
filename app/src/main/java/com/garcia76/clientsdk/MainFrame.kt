@@ -13,6 +13,16 @@ import com.avaya.clientservices.credentials.CredentialProvider
 import com.avaya.clientservices.credentials.UserCredential
 import com.avaya.clientservices.user.UserConfiguration
 import java.util.*
+import com.avaya.clientservices.common.ConnectionPolicy
+import com.avaya.clientservices.common.SignalingServer
+import com.avaya.clientservices.client.UserCreatedException
+import android.R.attr.start
+import com.avaya.clientservices.user.User
+import com.avaya.clientservices.client.CreateUserCompletionHandler
+
+
+
+
 
 
 class MainFrame : AppCompatActivity() {
@@ -49,47 +59,77 @@ class MainFrame : AppCompatActivity() {
 
         }
 
+        var username = sharedPreferences.getString("usnername", "")
+        var sipcontroller = sharedPreferences.getString("sipcontroller", "")
+        var sipport = sharedPreferences.getInt("sipport", 5061)
+
+
+
         var client = Client(clientConfiguration, application, ApplicationClientListener())
         var userConfiguration = UserConfiguration()
         var sipConfiguration = userConfiguration.sipUserConfiguration
         sipConfiguration.isEnabled = true
-        sipConfiguration.userId = "5255552782823"
+
+        sipConfiguration.userId = username
+
+
+        val signalingServer = SignalingServer(SignalingServer.TransportType.TLS,
+                sipcontroller, // Provided by your administrator
+                sipport, // Provided by your administrator
+                SignalingServer.FailbackPolicy.AUTOMATIC)                // Allow the Client SDK to manage failback
+        sipConfiguration.connectionPolicy = ConnectionPolicy(signalingServer)
+        sipConfiguration.credentialProvider = SIPCredentialProvider
+        userConfiguration.sipUserConfiguration = sipConfiguration
+        client.createUser(userConfiguration, object : CreateUserCompletionHandler {
+            override fun onSuccess(user: User) {
+                var mUser = user
+                mUser.start()
+            }
+
+            override fun onError(error: UserCreatedException) {
+                Log.d("CSDK", "Failed to create user", error)
+            }
+        })
+
+
 
 
 
     }
 
     abstract class SIPCredentialProvider: CredentialProvider {
-        companion object {
-
+        companion object : CredentialProvider {
             private lateinit var context: Context
 
             fun setContext(con: Context) {
                 context=con
             }
+            override fun onAuthenticationChallengeCancelled(p0: Challenge?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onCredentialAccepted(p0: Challenge?) {
+                Log.d("CSDK","Credenciuales Aceptadas")
+
+
+            }
+
+            override fun onAuthenticationChallenge(challenge: Challenge,
+                                                   credentialCompletionHandler: CredentialCompletionHandler) {
+                Log.d("CSDK", "UserCredentialProvider.onAuthenticationChallenge : Challenge = $challenge")
+                var myPreferences = "myPrefs"
+                var sharedPreferences = context.getSharedPreferences(myPreferences, Context.MODE_PRIVATE)
+                var user = sharedPreferences.getString("username", "")
+                var password = sharedPreferences.getString("password", "")
+                var domain = sharedPreferences.getString("sipdomain", "")
+                val userCredential = UserCredential(user, password, domain)
+                credentialCompletionHandler.onCredentialProvided(userCredential)
+            }
         }
 
-        override fun onAuthenticationChallengeCancelled(p0: Challenge?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun onCredentialAccepted(p0: Challenge?) {
-            Log.d("CSDK","Credenciuales Aceptadas")
-
 
         }
 
-        override fun onAuthenticationChallenge(challenge: Challenge,
-                                               credentialCompletionHandler: CredentialCompletionHandler) {
-            Log.d("CSDK", "UserCredentialProvider.onAuthenticationChallenge : Challenge = $challenge")
-            var myPreferences = "myPrefs"
-            var sharedPreferences = context.getSharedPreferences(myPreferences, Context.MODE_PRIVATE)
-            var user = sharedPreferences.getString("username", "")
-            var password = sharedPreferences.getString("password", "")
-            var domain = sharedPreferences.getString("sipdomain", "")
-            val userCredential = UserCredential(user, password, domain)
-            credentialCompletionHandler.onCredentialProvided(userCredential)
-        }
-    }
+
 
 }

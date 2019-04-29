@@ -1,14 +1,22 @@
 package com.garcia76.clientsdk
 
+import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.pm.PackageManager
+import android.media.AudioFormat
+import android.media.AudioRecord
+import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.View
 import android.view.View.inflate
+import android.widget.TextSwitcher
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatTextView
 import com.avaya.clientservices.call.*
@@ -28,14 +36,38 @@ import kotlinx.android.synthetic.main.activity_main_frame.*
 import java.util.*
 import com.avaya.clientservices.call.CallService
 import com.garcia76.clientsdk.MainFrame.AppCallServiceHandler
+import com.google.api.gax.rpc.ApiStreamObserver
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.cloud.speech.v1.*
+import com.google.protobuf.ByteString
 import com.tapadoo.alerter.Alerter
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+
+private const val TAG = "Speech"
+
 
 
 class MainFrame : AppCompatActivity() {
+    companion object {
+        private val PERMISSIONS = arrayOf(Manifest.permission.RECORD_AUDIO)
+        private const val REQUEST_RECORD_AUDIO_PERMISSION = 200
+    }
     var clientConfiguration: ClientConfiguration? = null
-    var useruuid:String? = null
+    var useruuid: String? = null
     val myPreferences = "myPrefs"
-
+    private var mPermissionToRecord = true
+    private var mAudioEmitter: AudioEmitter? = null
+    private lateinit var mTextView: TextSwitcher
+    private val mSpeechClient by lazy {
+        applicationContext.resources.openRawResource(R.raw.credential).use {
+            SpeechClient.create(SpeechSettings.newBuilder()
+                .setCredentialsProvider { GoogleCredentials.fromStream(it) }
+                .build())
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_frame)
@@ -43,6 +75,17 @@ class MainFrame : AppCompatActivity() {
         SIPCredentialProvider.setContext(this)
         AppCallHandler.setContext(this)
         AppCallServiceHandler.setContext(this)
+
+        mTextView = findViewById(R.id.textView14)
+        mTextView.setFactory {
+            val t = TextView(this)
+            t.text = "Escuchando"
+            t.gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            t.setTextAppearance(android.R.style.TextAppearance_Large)
+            t
+        }
+        mTextView.setInAnimation(applicationContext, android.R.anim.fade_in)
+        mTextView.setOutAnimation(applicationContext, android.R.anim.fade_out)
 
 
         val sharedPreferences = getSharedPreferences(myPreferences, Context.MODE_PRIVATE)
@@ -109,36 +152,67 @@ class MainFrame : AppCompatActivity() {
                         var callService = mUser!!.callService
                         callService.activeCall.end()
                     }
-
                 }
-
-
-
             }
 
             override fun onError(error: UserCreatedException) {
                 Log.d("CSDK", "Failed to create user", error)
-                // build alert dialog
                 val dialogBuilder = AlertDialog.Builder(this@MainFrame)
-                // set message of alert dialog
                 dialogBuilder.setMessage("Ha ocurrido un eror ${error.failureReason}")
-                    // if the dialog is cancelable
-
-                    // positive button text and action
                     .setPositiveButton("Aceptar") { dialog, id -> finish()
                     }
-
-
-                // create dialog box
                 val alert = dialogBuilder.create()
-                // set title for alert dialog box
                 alert.setTitle("Ha ocurrido un error")
-                // show alert dialog
                 alert.show()
-
             }
         })
 
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        if (mPermissionToRecord) {
+            val isFirstRequest = AtomicBoolean(true)
+            mAudioEmitter = AudioEmitter()
+            val requestStream = mSpeechClient.streamingRecognizeCallable()
+                .bidiStreamingCall(object : ApiStreamObserver<StreamingRecognizeResponse> {
+                    override fun onNext(value: StreamingRecognizeResponse) {
+                        runOnUiThread {
+                            when {
+                                value.resultsCount > 0 -> mTextView.setText(value.getResults(0).getAlternatives(0).transcript)
+                                else -> mTextView.setText("error")
+                            }
+                        }
+                    }
+
+                    override fun onError(t: Throwable) {
+                        Log.e(TAG, "an error occurred", t)
+                    }
+
+                    override fun onCompleted() {
+                        Log.d(TAG, "stream closed")
+                    }
+                })
+            mAudioEmitter!!.start { bytes ->
+                val builder = StreamingRecognizeRequest.newBuilder()
+                    .setAudioContent(bytes)
+                if (isFirstRequest.getAndSet(false)) {
+                    builder.streamingConfig = StreamingRecognitionConfig.newBuilder()
+                        .setConfig(RecognitionConfig.newBuilder()
+                            .setLanguageCode("es-MX")
+                            .setEncoding(RecognitionConfig.AudioEncoding.LINEAR16)
+                            .setSampleRateHertz(16000)
+                            .build())
+                        .setInterimResults(false)
+                        .setSingleUtterance(false)
+                        .build()
+                }
+                requestStream.onNext(builder.build())
+            }
+        } else {
+            Log.e(TAG, "No permission to record! Please allow and then relaunch the app!")
+        }
     }
 
     abstract class AppCallHandler:CallListener {
@@ -319,22 +393,12 @@ class MainFrame : AppCompatActivity() {
                 credentialCompletionHandler.onCredentialProvided(userCredential)
                 Log.d("CSDK", challenge.failureCount.toString())
                 if (challenge.failureCount >= 1){
-                    // build alert dialog
                     val dialogBuilder = AlertDialog.Builder(context)
-                    // set message of alert dialog
                     dialogBuilder.setMessage("Credenciales incorrectas")
-                        // if the dialog is cancelable
-
-                        // positive button text and action
                         .setPositiveButton("Aceptar") { dialog, id -> MainFrame().finish()
                         }
-
-
-                    // create dialog box
                     val alert = dialogBuilder.create()
-                    // set title for alert dialog box
                     alert.setTitle("Ha ocurrido un error")
-                    // show alert dialog
                     alert.show()
                 }
             }
@@ -344,7 +408,6 @@ class MainFrame : AppCompatActivity() {
     abstract class AppCallServiceHandler:CallServiceListener {
         companion object : CallServiceListener {
             private lateinit var context: Activity
-
             fun setContext(con: Activity) {
                 context = con
             }
@@ -386,24 +449,77 @@ class MainFrame : AppCompatActivity() {
 
                         })
                         .addButton("Video", R.style.AlertButton, View.OnClickListener {
-
                         })
                         .addButton("Colgar", R.style.AlertButton, View.OnClickListener {
                             p1?.ignore()
                             Alerter.hide()
                         })
                         .show()
-
-
             }
 
             override fun onCallRemoved(p0: CallService?, p1: Call?) {
                 Log.d("CSDK-CSListen", "Se ha removido la llamada")
                 context.status_txt.text = "Llamada Terminada"
-
-
             }
+        }
+    }
 
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
+            mPermissionToRecord = grantResults[0] == PackageManager.PERMISSION_GRANTED
+        }
+        if (!mPermissionToRecord) {
+            finish()
+        }
+    }
+
+    internal class AudioEmitter {
+
+        private var mAudioRecorder: AudioRecord? = null
+        private var mAudioExecutor: ScheduledExecutorService? = null
+        private lateinit var mBuffer: ByteArray
+        fun start(
+            encoding: Int = AudioFormat.ENCODING_PCM_16BIT,
+            channel: Int = AudioFormat.CHANNEL_IN_MONO,
+            sampleRate: Int = 8000,
+            subscriber: (ByteString) -> Unit
+        ) {
+            mAudioExecutor = Executors.newSingleThreadScheduledExecutor()
+
+            mAudioRecorder = AudioRecord.Builder()
+                .setAudioSource(MediaRecorder.AudioSource.MIC)
+                .setAudioFormat(
+                    AudioFormat.Builder()
+                        .setEncoding(encoding)
+                        .setSampleRate(sampleRate)
+                        .setChannelMask(channel)
+                        .build())
+                .build()
+            mBuffer = ByteArray(2 * AudioRecord.getMinBufferSize(sampleRate, channel, encoding))
+            // inicio
+            Log.d(TAG, "Recording audio with buffer size of: ${mBuffer.size} bytes")
+            mAudioRecorder!!.startRecording()
+            mAudioExecutor!!.scheduleAtFixedRate({
+                val read = mAudioRecorder!!.read(
+                    mBuffer, 0, mBuffer.size, AudioRecord.READ_BLOCKING)
+
+                if (read > 0) {
+                    subscriber(ByteString.copyFrom(mBuffer, 0, read))
+                }
+            }, 0, 10, TimeUnit.MILLISECONDS)
+        }
+
+        fun stop() {
+            // stop events
+            mAudioExecutor?.shutdown()
+            mAudioExecutor = null
+
+            // stop recording
+            mAudioRecorder?.stop()
+            mAudioRecorder?.release()
+            mAudioRecorder = null
         }
     }
 }

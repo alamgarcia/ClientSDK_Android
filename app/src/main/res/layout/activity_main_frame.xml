@@ -63,7 +63,7 @@
     <LinearLayout android:layout_width="fill_parent"
                   android:layout_height="wrap_content" android:id="@+id/linearLayout6"
                   android:layout_gravity="center" android:gravity="center"
-                  android:layout_marginTop="20dip" android:orientation="horizontal">
+                  android:layout_marginTop="10dip" android:orientation="horizontal">
 
         <TextView
                 android:text="@string/estado_llamada"
@@ -77,7 +77,7 @@
     <LinearLayout android:layout_width="fill_parent"
                   android:layout_height="wrap_content" android:id="@+id/linearLayout7"
                   android:layout_gravity="center" android:gravity="center"
-                  android:layout_marginTop="20dip" android:orientation="horizontal">
+                  android:layout_marginTop="10dip" android:orientation="horizontal">
 
         <TextView
                 android:text="@string/tiempo_llamada"
@@ -89,18 +89,18 @@
                 android:layout_height="wrap_content" android:id="@+id/tiempo_txt" android:layout_weight="1"/>
     </LinearLayout>
     <LinearLayout android:layout_width="fill_parent"
-                  android:layout_height="wrap_content" android:id="@+id/linearLayout8"
+                  android:layout_height="62dp" android:id="@+id/linearLayout9"
                   android:layout_gravity="center" android:gravity="center"
-                  android:layout_marginTop="20dip" android:orientation="horizontal">
+                  android:layout_marginTop="10dip" android:orientation="horizontal">
 
         <TextView
-                android:text="@string/asunto_lbl"
+                android:text="@string/translate_lbl"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:id="@+id/subject_lbl" android:layout_weight="1"/>
-        <TextView
+        <TextSwitcher
                 android:text="TextView"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:id="@+id/textView14" android:layout_weight="1"/>
+                android:layout_height="match_parent" android:id="@+id/textView14" android:layout_weight="1"/>
     </LinearLayout>
 
 </LinearLayout>

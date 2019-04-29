@@ -44,4 +44,5 @@
     <string name="tiempo_llamada">Tiempo de la llamada</string>
     <string name="asunto_lbl">Asunto</string>
     <string name="colgar_btn">Colgar</string>
+    <string name="translate_lbl">Traducción:</string>
 </resources>

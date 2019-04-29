@@ -20,6 +20,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    packagingOptions {
+        exclude 'META-INF/io.netty.versions.properties'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/INDEX.LIST'
+    }
 }
 
 dependencies {
@@ -53,6 +58,19 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'io.netty:netty-all:4.1.0.Final'
     implementation 'com.tapadoo.android:alerter:4.0.2'
+    // add these dependencies for the speech client
+    implementation 'io.grpc:grpc-okhttp:1.10.0'
+    implementation 'com.google.cloud:google-cloud-speech:0.41.0-alpha'
 
 
 }
+
+task copySecretKey(type: Copy) {
+    File secretKey = file "$System.env.GOOGLE_APPLICATION_CREDENTIALS"
+    from secretKey.getParent()
+    include secretKey.getName()
+    into 'src/main/res/raw'
+    rename secretKey.getName(), "credential.json"
+}
+preBuild.dependsOn(copySecretKey)
+

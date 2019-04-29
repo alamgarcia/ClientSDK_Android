@@ -1,5 +1,6 @@
 package com.garcia76.clientsdk
 
+import android.util.Log
 import com.avaya.clientservices.client.Client
 import com.avaya.clientservices.client.ClientListener
 import com.avaya.clientservices.user.User
@@ -14,7 +15,8 @@ class ApplicationClientListener:ClientListener {
     }
 
     override fun onClientUserCreated(p0: Client?, p1: User?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        Log.d("CSDK", "Cliente Creados")
+
     }
 
     override fun onClientShutdown(p0: Client?) {

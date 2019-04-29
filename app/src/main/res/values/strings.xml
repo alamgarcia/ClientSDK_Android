@@ -23,4 +23,25 @@
     <string name="sip_controller_hint">Controlador SIP:</string>
     <string name="sip_domain_label">Dominio SIP:</string>
     <string name="port_lbl">Puerto:</string>
+
+
+    <string name="hello">Hello World, DialpadActivity!</string>
+    <string name="one">1</string>
+    <string name="two">2</string>
+    <string name="three">3</string>
+    <string name="four">4</string>
+    <string name="five">5</string>
+    <string name="six">6</string>
+    <string name="seven">7</string>
+    <string name="eight">8</string>
+    <string name="nine">9</string>
+    <string name="asterisk">*</string>
+    <string name="zero">0</string>
+    <string name="hash">#</string>
+    <string name="dial">Dial</string>
+    <string name="backspace">&lt;=</string>
+    <string name="estado_llamada">Estado de la Llamada:</string>
+    <string name="tiempo_llamada">Tiempo de la llamada</string>
+    <string name="asunto_lbl">Asunto</string>
+    <string name="colgar_btn">Colgar</string>
 </resources>

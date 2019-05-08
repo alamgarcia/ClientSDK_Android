@@ -39,6 +39,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui:2.0.0'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.0.0'
     implementation 'androidx.navigation:navigation-ui-ktx:2.0.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     fileTree(dir: 'libs', include: '**/*.aar')
             .each { File file ->
                 dependencies.add("implementation", [name: file.name.lastIndexOf('.').with {
@@ -73,4 +74,3 @@ task copySecretKey(type: Copy) {
     rename secretKey.getName(), "credential.json"
 }
 preBuild.dependsOn(copySecretKey)
-

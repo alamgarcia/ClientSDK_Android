@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.avaya.clientservices.client.Client
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
@@ -37,6 +38,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }).check()
         setContentView(R.layout.activity_main)
+        csdkversion_lbl.text = Client.getVersion()
 
         login_btn.setOnClickListener {
 

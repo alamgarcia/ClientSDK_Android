@@ -12,7 +12,7 @@
     </EditText>
     <LinearLayout android:layout_width="fill_parent"
                   android:layout_height="wrap_content" android:id="@+id/linearLayout1"
-                  android:layout_marginTop="10dip">
+                  android:layout_marginTop="5dip">
         <Button android:layout_weight="1" android:layout_height="wrap_content"
                 android:layout_width="0dp" android:text="@string/one" android:id="@+id/one"></Button>
         <Button android:layout_weight="1" android:layout_height="wrap_content"
@@ -22,7 +22,7 @@
     </LinearLayout>
     <LinearLayout android:layout_width="fill_parent"
                   android:layout_height="wrap_content" android:id="@+id/linearLayout2"
-                  android:layout_marginTop="10dip">
+                  android:layout_marginTop="5dip">
         <Button android:layout_weight="1" android:layout_height="wrap_content"
                 android:layout_width="0dp" android:text="@string/four" android:id="@+id/four"></Button>
         <Button android:layout_weight="1" android:layout_height="wrap_content"
@@ -32,7 +32,7 @@
     </LinearLayout>
     <LinearLayout android:layout_width="fill_parent"
                   android:layout_height="wrap_content" android:id="@+id/linearLayout3"
-                  android:layout_marginTop="10dip">
+                  android:layout_marginTop="5dip">
         <Button android:layout_weight="1" android:layout_height="wrap_content"
                 android:layout_width="0dp" android:text="@string/seven" android:id="@+id/seven"></Button>
         <Button android:layout_weight="1" android:layout_height="wrap_content"
@@ -42,7 +42,7 @@
     </LinearLayout>
     <LinearLayout android:layout_width="fill_parent"
                   android:layout_height="wrap_content" android:id="@+id/linearLayout4"
-                  android:layout_marginTop="10dip">
+                  android:layout_marginTop="5dip">
         <Button android:layout_weight="1" android:layout_height="wrap_content"
                 android:layout_width="0dp" android:text="@string/asterisk"
                 android:id="@+id/asterisk"></Button>
@@ -54,7 +54,7 @@
     <LinearLayout android:layout_width="fill_parent"
                   android:layout_height="wrap_content" android:id="@+id/linearLayout5"
                   android:layout_gravity="center" android:gravity="center"
-                  android:layout_marginTop="20dip">
+                  android:layout_marginTop="10dip">
         <Button android:layout_height="wrap_content" android:text="@string/dial"
                 android:layout_weight="1" android:layout_width="0dp" android:id="@+id/dialButton"></Button>
         <Button android:layout_height="wrap_content" android:text="@string/colgar_btn"
@@ -63,7 +63,7 @@
     <LinearLayout android:layout_width="fill_parent"
                   android:layout_height="wrap_content" android:id="@+id/linearLayout6"
                   android:layout_gravity="center" android:gravity="center"
-                  android:layout_marginTop="10dip" android:orientation="horizontal">
+                  android:layout_marginTop="5dip" android:orientation="horizontal">
 
         <TextView
                 android:text="@string/estado_llamada"
@@ -77,7 +77,7 @@
     <LinearLayout android:layout_width="fill_parent"
                   android:layout_height="wrap_content" android:id="@+id/linearLayout7"
                   android:layout_gravity="center" android:gravity="center"
-                  android:layout_marginTop="10dip" android:orientation="horizontal">
+                  android:layout_marginTop="5dip" android:orientation="horizontal">
 
         <TextView
                 android:text="@string/tiempo_llamada"
@@ -89,14 +89,16 @@
                 android:layout_height="wrap_content" android:id="@+id/tiempo_txt" android:layout_weight="1"/>
     </LinearLayout>
     <LinearLayout android:layout_width="fill_parent"
-                  android:layout_height="62dp" android:id="@+id/linearLayout9"
+                  android:layout_height="match_parent" android:id="@+id/linearLayout9"
                   android:layout_gravity="center" android:gravity="center"
-                  android:layout_marginTop="10dip" android:orientation="horizontal">
+                  android:layout_marginTop="5dip" android:orientation="horizontal">
 
-        <TextView
-                android:text="@string/translate_lbl"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:id="@+id/subject_lbl" android:layout_weight="1"/>
+        <Button
+                android:text="@string/activar_traduccion"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content" android:id="@+id/act_traduccion_btn" android:layout_weight="1"
+                android:textAlignment="gravity" android:textDirection="inherit"
+                android:elegantTextHeight="true" android:autoText="true"/>
         <TextSwitcher
                 android:text="TextView"
                 android:layout_width="wrap_content"
